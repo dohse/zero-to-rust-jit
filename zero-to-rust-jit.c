@@ -4,10 +4,10 @@ int main(int argc, const char *argv[]) {
   // Init our bitcode JIT compiler and the LLVM context
   LLVMOrcLLJITRef Jit;
   LLVMOrcThreadSafeContextRef Ctx;
-  init(argc, argv, &Jit, &Ctx);
+  const char *FileName = init(argc, argv, &Jit, &Ctx);
 
   // Create our demo function
-  LLVMModuleRef Mod = buildModule(Ctx);
+  LLVMModuleRef Mod = loadModule(FileName, Ctx);
   addModule(Jit, Mod);
 
   // Materialize our demo function
