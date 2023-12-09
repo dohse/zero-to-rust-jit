@@ -70,3 +70,14 @@ Panic due to overflow: attempt to add with overflow
 Process 235912 exited with status = 1
 (lldb)
 ```
+
+Transpile the C code to Rust
+```
+cmake .. -D LLVM_DIR=/usr/lib/llvm-17/lib/cmake/llvm -DCMAKE_EXPORT_COMPILE_COMMANDS=1
+c2rust transpile compile_commands.json
+```
+
+Run the Rust version
+```
+cargo run build/sum_c.bc
+```
