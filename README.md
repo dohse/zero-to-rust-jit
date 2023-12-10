@@ -70,3 +70,9 @@ Panic due to overflow: attempt to add with overflow
 Process 235912 exited with status = 1
 (lldb)
 ```
+
+Run Rust
+
+```
+cargo run build/sum_c.bc
+```
