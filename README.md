@@ -61,6 +61,7 @@ Build mainline LLVM from source. This will take a while. We are using the C-API 
 ➜ cd llvm-project/build
 ➜ ninja llvm-config
 ➜ ninja $(bin/llvm-config --libnames OrcJIT native)
+➜ export LLVM_MAINLINE=$(pwd)
 ```
 
 Build the project against the just-built LLVM with the rustc version check disabled:
@@ -96,10 +97,14 @@ c2rust transpile compile_commands.json
 ```
 
 ## Debug the JITed bitcode:
+
+Debug support just landed on mainline for Linux and macOS:
 ```
 ➜ lldb -- build-mainline/zero-to-rust-jit
 (lldb) version
 lldb version 15.0.7
+(lldb) log enable lldb jit
+(lldb) settings set plugin.jit-loader.gdb.enable on
 (lldb) b sum.rs:4
 Breakpoint 1: no locations (pending).
 (lldb) run build-mainline/sum_rs.bc

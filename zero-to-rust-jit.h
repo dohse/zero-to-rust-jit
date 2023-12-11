@@ -1,10 +1,13 @@
 #ifndef ZERO_TO_RUST_JIT_H
 #define ZERO_TO_RUST_JIT_H
 
+#include "config.h"
+
 #include "llvm-c/BitReader.h"
 #include "llvm-c/Core.h"
 #include "llvm-c/Error.h"
 #include "llvm-c/LLJIT.h"
+#include "llvm-c/LLJITUtils.h"
 #include "llvm-c/Support.h"
 #include "llvm-c/Target.h"
 
@@ -24,6 +27,7 @@ LLVMModuleRef loadModule(const char *FileName, LLVMOrcThreadSafeContextRef Ctx);
 
 LLVMOrcJITDylibRef addModule(LLVMOrcLLJITRef Jit, LLVMModuleRef Mod);
 void addGenerator(LLVMOrcJITDylibRef Unit, ResolveFn *Resolve);
+void addDebugSupport(LLVMOrcLLJITRef J);
 
 LLVMErrorRef generator(LLVMOrcDefinitionGeneratorRef G, void *Ctx,
                        LLVMOrcLookupStateRef *LS, LLVMOrcLookupKind K,
