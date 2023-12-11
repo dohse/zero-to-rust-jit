@@ -90,6 +90,16 @@ add_custom_command(OUTPUT ${bitcode_sum_rs}
   VERBATIM
 )
 
+set(source_prime_factors_rs ${CMAKE_CURRENT_SOURCE_DIR}/prime_factors.rs)
+set(bitcode_prime_factors_rs ${CMAKE_CURRENT_BINARY_DIR}/prime_factors_rs.bc)
+add_custom_command(OUTPUT ${bitcode_prime_factors_rs}
+  COMMAND rustc --crate-type=lib -O --emit=llvm-bc -g -o ${bitcode_prime_factors_rs} ${source_prime_factors_rs}
+  WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+  DEPENDS ${source_prime_factors_rs}
+  COMMENT "Precompiling ${source_prime_factors_rs}"
+  VERBATIM
+)
+
 add_custom_target(precompile_sum_c DEPENDS ${bitcode_sum_c})
-add_custom_target(precompile_sum_rs DEPENDS ${bitcode_sum_rs})
-add_dependencies(zero-to-rust-jit precompile_sum_c precompile_sum_rs)
+add_custom_target(precompile_rs DEPENDS ${bitcode_sum_rs} ${bitcode_prime_factors_rs})
+add_dependencies(zero-to-rust-jit precompile_sum_c precompile_rs)
