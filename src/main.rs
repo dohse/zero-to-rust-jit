@@ -117,7 +117,7 @@ fn main() {
         add_generator(unit, handle_undefined_symbol);
 
         let mut prime_factors_fn_addr: LLVMOrcJITTargetAddress = 0;
-        let name = CString::new("_ZN13prime_factors13prime_factors17h828e6070e337ed09E").unwrap();
+        let name = CString::new("prime_factors").unwrap();
         let err = LLVMOrcLLJITLookup(jit, &mut prime_factors_fn_addr as *mut _, name.as_ptr() as *const c_char);
         if check_error(err) {
             panic!();

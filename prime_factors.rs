@@ -1,3 +1,4 @@
+#[no_mangle]
 pub fn prime_factors(mut n: u64) -> Vec<u64> {
     let mut factors = Vec::new();
     let mut candidate = 2;
