@@ -7,9 +7,12 @@
 #include "llvm-c/Core.h"
 #include "llvm-c/Error.h"
 #include "llvm-c/LLJIT.h"
-#include "llvm-c/LLJITUtils.h"
 #include "llvm-c/Support.h"
 #include "llvm-c/Target.h"
+
+#if LLVM_CAPI_HAS_DEBUG_REGISTRATION
+#include "llvm-c/LLJITUtils.h"
+#endif
 
 #include <stdio.h>
 #include <stdlib.h>
