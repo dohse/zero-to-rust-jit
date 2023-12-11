@@ -1,8 +1,12 @@
 # From Zero to Rust JIT with the LLVM C-API
 
-LLVM C-API demo for runtime compilation with OrcJIT: IRBuilder ➜ C ➜ Rust
+LLVM C-API demo for runtime compilation with OrcJIT. We will start from an [example in upstream LLVM](https://github.com/llvm/llvm-project/blob/release/17.x/llvm/examples/OrcV2Examples/OrcV2CBindingsBasicUsage/OrcV2CBindingsBasicUsage.c) and move on step-by-step:
+
+![steps](2023-zero-to-rust-jit.png)
 
 ## Build against LLVM release version
+
+### Linux
 
 Install LLVM 17 with `apt` and build:
 ```
@@ -10,11 +14,39 @@ Install LLVM 17 with `apt` and build:
 ➜ chmod +x llvm.sh
 ➜ sudo ./llvm.sh 17
 ➜ sudo apt install -y libzstd-dev
-➜ git clone https://github.com/weliveindetail/llvm-jit-capi
+➜ git clone https://github.com/echtzeit-dev/zero-to-rust-jit
 ➜ rustc --version -v | tail -1
 LLVM version: 17.0.4
-➜ cd llvm-jit-capi
-➜ CC=clang CXX=clang++ ./build.sh build-release17 /usr/lib/llvm-17/lib/cmake/llvm
+➜ CC=clang CXX=clang++ cmake -GNinja -Bbuild -S. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_EXPORT_COMPILE_COMMANDS=On -DLLVM_DIR=/usr/lib/llvm-17/lib/cmake/llvm
+➜ ninja -Cbuild
+```
+
+### macOS
+
+Install LLVM 17 with `brew` and build:
+```
+➜ git clone https://github.com/echtzeit-dev/zero-to-rust-jit
+➜ rustc --version -v | tail -1
+LLVM version: 17.0.4
+➜ brew install llvm@17
+➜ brew info llvm@17 | head -1
+==> llvm: stable 17.0.6 (bottled), HEAD [keg-only]
+➜ ls -lh /usr/local/opt/llvm@17
+/usr/local/opt/llvm@17 -> ../Cellar/llvm/17.0.6
+➜ CC=clang CXX=clang++ cmake -GNinja -Bbuild -S. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_EXPORT_COMPILE_COMMANDS=On -DLLVM_DIR=/usr/local/opt/llvm@17/lib/cmake/llvm
+➜ ninja -Cbuild
+```
+
+## Run
+
+Pass bitcode for the `sum()` function as first command-line argument:
+```
+➜ build/zero-to-rust-jit build/sum_c.bc
+a = 1
+b = 2
+Oh hello, that's JITed code!
+1 + 2 = 3
+Again? (y/n) n
 ```
 
 ## Build against LLVM mainline
@@ -33,8 +65,8 @@ Build mainline LLVM from source. This will take a while. We are using the C-API 
 
 Build the project against the just-built LLVM with the rustc version check disabled:
 ```
-➜ git clone https://github.com/weliveindetail/llvm-jit-capi
-➜ cd llvm-jit-capi
+➜ git clone https://github.com/echtzeit-dev/zero-to-rust-jit
+➜ cd zero-to-rust-jit
 ➜ rustc --version -v | tail -1
 LLVM version: 17.0.4
 ➜ CC=clang CXX=clang++ cmake -GNinja -Bbuild-mainline -S. \
@@ -45,9 +77,27 @@ LLVM version: 17.0.4
 ➜ ninja -Cbuild-mainline
 ```
 
-Debug the JITed bitcode:
+## Transpile the C code to Rust
 ```
-➜ lldb -- build-mainline/llvm-jit-c
+cmake .. -D LLVM_DIR=/usr/lib/llvm-17/lib/cmake/llvm -DCMAKE_EXPORT_COMPILE_COMMANDS=1
+c2rust transpile compile_commands.json
+```
+
+## Build and run the Rust version
+
+### Linux
+```
+➜ cargo run build/sum_c.bc
+```
+
+### macOS
+```
+➜ LLVM_SYS_170_PREFIX=/usr/local/opt/llvm@17 cargo run build/sum_c.bc
+```
+
+## Debug the JITed bitcode:
+```
+➜ lldb -- build-mainline/zero-to-rust-jit
 (lldb) version
 lldb version 15.0.7
 (lldb) b sum.rs:4
@@ -57,7 +107,7 @@ Process 235912 launched (x86_64)
 Redirecting to host function RustPanicHandler @ 0x0000555555e89180: _ZN4core9panicking5panic17hcad0f3a89a1b36aaE
 1 location added to breakpoint 1
 Process 235912 stopped
-* thread #1, name = 'llvm-jit-c', stop reason = breakpoint 1.1
+* thread #1, name = 'zero-to-rust-jit', stop reason = breakpoint 1.1
     frame #0: 0x00007ffff7fba008 JIT(0x7ffff7ffa000)`sum(a=-2147483648, b=-2147483648) at sum.rs:4:5
    1    #[no_mangle]
    2    pub fn sum(a: i32, b: i32) -> i32 {
@@ -69,10 +119,4 @@ Process 235912 resuming
 Panic due to overflow: attempt to add with overflow
 Process 235912 exited with status = 1
 (lldb)
-```
-
-Run Rust
-
-```
-cargo run build/sum_c.bc
 ```
